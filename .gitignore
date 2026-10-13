@@ -1,0 +1,16 @@
+# members-only / college content and run state stay out of git
+out/
+vps-backups/
+__pycache__/
+.pytest_cache/
+cookies*
+*.bak*
+c4/*.csv
+c4/*.xlsx
+c4/sango_*.txt
+c4/*.log
+c4/last_run
+c4/pace
+c4/.lock
+c4/login_alerted
+.env

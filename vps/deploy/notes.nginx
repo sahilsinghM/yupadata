@@ -1,0 +1,36 @@
+# __NOTES_DOMAIN__: private yupa articles. Cloudflare (proxied) -> Access login -> here.
+# Two locks: only Cloudflare edge IPs, and every request must carry a valid Access JWT (access_check.py).
+server {
+    listen 80;
+    server_name __NOTES_DOMAIN__;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name __NOTES_DOMAIN__;
+    ssl_certificate     /etc/letsencrypt/live/__NOTES_DOMAIN__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__NOTES_DOMAIN__/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    server_tokens off;
+
+    include /etc/nginx/cloudflare-ips.conf;   # allow <cf range>; ... (generated at deploy)
+    deny all;
+
+    root /var/www/notes;
+    index index.html;
+    gzip on;
+    gzip_types application/json text/css application/javascript;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header Cache-Control "private" always;
+
+    auth_request /_access;
+    location = /_access {
+        internal;
+        proxy_pass http://127.0.0.1:8091;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Cf-Access-Jwt-Assertion $http_cf_access_jwt_assertion;
+    }
+    location / { try_files $uri $uri/ =404; }
+}

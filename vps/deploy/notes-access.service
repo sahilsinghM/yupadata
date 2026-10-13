@@ -1,0 +1,11 @@
+[Unit]
+Description=Cloudflare Access JWT check for __NOTES_DOMAIN__ (nginx auth_request)
+After=network-online.target
+
+[Service]
+EnvironmentFile=/root/.secrets/notes-access.env
+ExecStart=/usr/bin/python3 /root/yupadata/vps/access_check.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
